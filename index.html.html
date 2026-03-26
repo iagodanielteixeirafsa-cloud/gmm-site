@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GMM — Catálogo de Produtos</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --black:#080809;--deep:#0c0d10;--panel:#101114;--panel2:#13141a;
+  --border:rgba(255,255,255,0.07);--gold:#c9a84c;--gold-lt:#e8c97a;--gold-dim:rgba(201,168,76,0.12);
+  --white:#f4f2ed;--muted:rgba(244,242,237,0.45);--muted2:rgba(244,242,237,0.65);
+  --green:#2ecc71;--green-dim:rgba(46,204,113,0.12);
+  --red:#e74c3c;--red-dim:rgba(231,76,60,0.12);
+  --blue:#3498db;--blue-dim:rgba(52,152,219,0.12);
+  --serif:'Cormorant Garamond',serif;--sans:'DM Sans',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--black);color:var(--white);font-family:var(--sans);font-weight:300;min-height:100vh}
+
+/* ── LOGIN ── */
+#pgLogin{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse 60% 70% at 60% 40%,rgba(201,168,76,.07) 0%,transparent 65%),var(--black);
+  position:relative;overflow:hidden;
+}
+#pgLogin::before{content:'GMM';position:absolute;font-family:var(--serif);font-size:40vw;font-weight:700;color:rgba(201,168,76,.03);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+.login-box{background:var(--panel);border:1px solid var(--border);padding:3rem 2.8rem;width:100%;max-width:420px;position:relative;animation:fadeUp .6s ease both}
+.login-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.login-logo{font-family:var(--serif);font-size:2.2rem;font-weight:700;color:var(--gold);letter-spacing:.14em;text-align:center;display:block;margin-bottom:.3rem}
+.login-sub{text-align:center;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:2.5rem}
+.lfield{margin-bottom:1.2rem}
+.lfield label{display:block;font-size:.67rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+.lfield input{width:100%;background:var(--panel2);border:1px solid var(--border);color:var(--white);font-family:var(--sans);font-size:.9rem;padding:.85rem 1rem;outline:none;transition:border-color .3s}
+.lfield input:focus{border-color:rgba(201,168,76,.5)}
+.login-btn{width:100%;background:var(--gold);color:var(--black);border:none;padding:1rem;font-family:var(--sans);font-size:.8rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:background .3s}
+.login-btn:hover{background:var(--gold-lt)}
+.login-err{display:none;margin-top:.8rem;padding:.7rem 1rem;background:var(--red-dim);border:1px solid rgba(231,76,60,.3);font-size:.78rem;color:#e74c3c}
+.login-hint{margin-top:1.2rem;padding:.8rem 1rem;background:var(--panel2);border:1px solid var(--border);font-size:.73rem;color:var(--muted);line-height:1.7}
+.login-hint b{color:var(--gold)}
+
+/* ── SISTEMA ── */
+#pgSistema{display:none;flex-direction:row;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{width:240px;flex-shrink:0;background:var(--deep);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sb-logo{font-family:var(--serif);font-size:1.5rem;font-weight:700;color:var(--gold);letter-spacing:.14em;padding:1.8rem 1.5rem;border-bottom:1px solid var(--border);display:block}
+.sb-role{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);display:block;padding:.6rem 1.5rem 1.2rem;border-bottom:1px solid var(--border)}
+.sb-nav{flex:1;padding:1rem 0}
+.sb-section{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);padding:.8rem 1.5rem .4rem;margin-top:.5rem}
+.sb-item{display:flex;align-items:center;gap:.8rem;padding:.75rem 1.5rem;font-size:.82rem;color:var(--muted2);cursor:pointer;transition:background .2s,color .2s;border:none;background:transparent;width:100%;text-align:left}
+.sb-item:hover{background:rgba(255,255,255,.04);color:var(--white)}
+.sb-item.active{background:var(--gold-dim);color:var(--gold);border-left:2px solid var(--gold)}
+.sb-footer{padding:1.2rem 1.5rem;border-top:1px solid var(--border)}
+.sb-user{display:flex;align-items:center;gap:.8rem;margin-bottom:.8rem}
+.sb-avatar{width:34px;height:34px;border-radius:50%;background:var(--gold-dim);border:1px solid rgba(201,168,76,.3);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:.95rem;color:var(--gold);flex-shrink:0}
+.sb-uname{font-size:.82rem;font-weight:500}.sb-uemail{font-size:.65rem;color:var(--muted)}
+.logout-btn{width:100%;background:transparent;border:1px solid var(--border);color:var(--muted);padding:.5rem;font-family:var(--sans);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .3s}
+.logout-btn:hover{border-color:var(--red);color:var(--red)}
+
+/* MAIN */
+.main-area{flex:1;display:flex;flex-direction:column}
+.topbar{padding:1.2rem 2.5rem;background:rgba(8,8,9,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-title{font-family:var(--serif);font-size:1.4rem;font-weight:400}
+.topbar-title em{font-style:italic;color:var(--gold-lt)}
+.topbar-date{font-size:.72rem;color:var(--muted)}
+.content{padding:2rem 2.5rem;flex:1}
+
+/* TABS */
+.tab-page{display:none}.tab-page.active{display:block;animation:fadeUp .4s ease both}
+
+/* CATÁLOGO */
+.catalogo-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.5rem;margin-top:1.5rem}
+.plano-card{background:var(--panel);border:1px solid var(--border);position:relative;overflow:hidden;transition:border-color .3s,transform .2s}
+.plano-card:hover{border-color:rgba(201,168,76,.35);transform:translateY(-2px)}
+.plano-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold-lt))}
+.plano-top{padding:1.8rem 2rem 1.2rem}
+.plano-badge{display:inline-block;padding:.2rem .7rem;font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;border:1px solid rgba(201,168,76,.3);color:var(--gold);margin-bottom:1rem}
+.plano-nome{font-family:var(--serif);font-size:1.8rem;font-weight:300;line-height:1.1;margin-bottom:.4rem}
+.plano-nome em{font-style:italic;color:var(--gold-lt)}
+.plano-desc{font-size:.82rem;color:var(--muted);line-height:1.7;margin-bottom:1.2rem}
+.plano-beneficios{display:flex;flex-direction:column;gap:.4rem;margin-bottom:1.5rem}
+.plano-ben{display:flex;align-items:center;gap:.6rem;font-size:.8rem;color:var(--muted2)}
+.plano-ben::before{content:'◆';color:var(--gold);font-size:.4rem;flex-shrink:0}
+.plano-pap{background:var(--gold-dim);border:1px solid rgba(201,168,76,.25);padding:.8rem 1rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:.6rem;font-size:.78rem;color:var(--gold-lt)}
+.plano-bottom{padding:1.2rem 2rem 1.8rem;border-top:1px solid var(--border);background:rgba(0,0,0,.15)}
+.comissao-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem}
+.com-label{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.com-val{font-family:var(--serif);font-size:1.1rem;font-weight:600;color:var(--green)}
+.plano-actions{display:flex;gap:.7rem}
+.btn-vender{flex:1;background:var(--gold);color:var(--black);border:none;padding:.85rem;font-family:var(--sans);font-size:.75rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:background .2s}
+.btn-vender:hover{background:var(--gold-lt)}
+.btn-info{background:transparent;border:1px solid var(--border);color:var(--muted);padding:.85rem 1rem;font-family:var(--sans);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.btn-info:hover{border-color:rgba(201,168,76,.4);color:var(--gold)}
+
+/* REGISTRAR VENDA */
+.reg-form{background:var(--panel);border:1px solid var(--border);padding:2rem;margin-bottom:1.5rem;position:relative}
+.reg-form::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),transparent)}
+.reg-form h3{font-family:var(--serif);font-size:1.3rem;font-weight:400;margin-bottom:1.5rem}
+.reg-form h3 em{font-style:italic;color:var(--gold-lt)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem}
+.field label{display:block;font-size:.67rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
+.field input,.field select{width:100%;background:var(--panel2);border:1px solid var(--border);color:var(--white);font-family:var(--sans);font-size:.85rem;padding:.75rem .9rem;outline:none;transition:border-color .3s}
+.field input:focus,.field select:focus{border-color:rgba(201,168,76,.5)}
+.field select option{background:var(--panel2)}
+.comissao-preview{background:var(--gold-dim);border:1px solid rgba(201,168,76,.25);padding:1.2rem 1.5rem;margin-bottom:1.2rem;display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
+.cp-item{text-align:center}
+.cp-val{font-family:var(--serif);font-size:1.5rem;font-weight:600;color:var(--gold);display:block}
+.cp-label{font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:.2rem}
+.btn-registrar{background:var(--gold);color:var(--black);border:none;padding:.9rem 2.5rem;font-family:var(--sans);font-size:.78rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:background .2s}
+.btn-registrar:hover{background:var(--gold-lt)}
+
+/* MINHAS VENDAS */
+.table-wrap{background:var(--panel);border:1px solid var(--border);overflow:hidden;margin-bottom:1.5rem}
+.table-head{display:flex;align-items:center;justify-content:space-between;padding:1.2rem 1.5rem;border-bottom:1px solid var(--border)}
+.table-head h3{font-family:var(--serif);font-size:1.1rem;font-weight:400}
+table{width:100%;border-collapse:collapse}
+thead th{font-size:.65rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);padding:.9rem 1.2rem;text-align:left;border-bottom:1px solid var(--border);background:var(--panel2)}
+tbody tr{border-bottom:1px solid var(--border);transition:background .2s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,.03)}
+tbody td{padding:.9rem 1.2rem;font-size:.83rem;color:var(--muted2)}
+tbody td strong{color:var(--white);font-weight:500}
+.badge{display:inline-block;padding:.2rem .7rem;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;border-radius:2px}
+.badge-green{background:var(--green-dim);color:var(--green);border:1px solid rgba(46,204,113,.25)}
+.badge-gold{background:var(--gold-dim);color:var(--gold);border:1px solid rgba(201,168,76,.25)}
+.badge-gray{background:rgba(255,255,255,.07);color:var(--muted);border:1px solid var(--border)}
+
+/* STAT CARDS */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem;margin-bottom:2rem}
+.stt-card{background:var(--panel);border:1px solid var(--border);padding:1.5rem;position:relative;overflow:hidden}
+.stt-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--accent,var(--gold));opacity:.5}
+.stt-icon{font-size:1.4rem;margin-bottom:.8rem;display:block}
+.stt-val{font-family:var(--serif);font-size:2rem;font-weight:600;color:var(--white);line-height:1;margin-bottom:.3rem}
+.stt-label{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+/* MODAL CONFIRMAÇÃO */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:2000;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--panel);border:1px solid var(--border);padding:2.5rem;width:100%;max-width:480px;position:relative;animation:fadeUp .3s ease}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.modal-close{position:absolute;top:1rem;right:1rem;background:transparent;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer}
+.modal-close:hover{color:var(--white)}
+.modal h3{font-family:var(--serif);font-size:1.5rem;font-weight:300;margin-bottom:.5rem}
+.modal h3 em{font-style:italic;color:var(--gold-lt)}
+.modal p{color:var(--muted);font-size:.85rem;line-height:1.8;margin-bottom:1.5rem}
+.modal-btns{display:flex;gap:.8rem}
+.mbtn{flex:1;padding:.85rem;font-family:var(--sans);font-size:.78rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border:none}
+.mbtn-primary{background:var(--gold);color:var(--black)}.mbtn-primary:hover{background:var(--gold-lt)}
+.mbtn-secondary{background:transparent;border:1px solid var(--border);color:var(--muted)}.mbtn-secondary:hover{color:var(--white)}
+
+/* ADM GESTÃO */
+.sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+.sec-header h2{font-family:var(--serif);font-size:1.6rem;font-weight:300}
+.sec-header h2 em{font-style:italic;color:var(--gold-lt)}
+.add-btn{background:var(--gold);color:var(--black);border:none;padding:.6rem 1.4rem;font-family:var(--sans);font-size:.75rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
+.add-btn:hover{background:var(--gold-lt)}
+.act-btn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:.3rem .7rem;font-size:.7rem;cursor:pointer;font-family:var(--sans)}
+.act-btn:hover{border-color:var(--gold);color:var(--gold)}
+.act-btn.danger:hover{border-color:var(--red);color:var(--red)}
+
+/* TOAST */
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);background:var(--panel);border:1px solid rgba(201,168,76,.4);color:var(--white);padding:.9rem 2rem;font-size:.82rem;z-index:9000;transition:transform .4s ease;border-left:3px solid var(--gold);white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* LINK CONFIRM */
+.link-confirm{background:var(--panel2);border:1px solid rgba(201,168,76,.2);padding:1rem 1.2rem;margin:1rem 0;font-size:.8rem}
+.link-confirm span{color:var(--gold);font-weight:500}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:768px){
+  .catalogo-grid{grid-template-columns:1fr}
+  .form-row,.form-row-3{grid-template-columns:1fr}
+  .stat-row{grid-template-columns:repeat(2,1fr)}
+  .sidebar{width:200px}
+}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- ══ LOGIN ══ -->
+<div id="pgLogin">
+  <div class="login-box">
+    <span class="login-logo">GMM</span>
+    <p class="login-sub">Catálogo de Produtos — Ampla Mais</p>
+    <div class="lfield"><label>E-mail</label><input type="email" id="loginEmail" placeholder="seu@email.com" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <div class="lfield"><label>Senha</label><input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <button class="login-btn" onclick="doLogin()">Acessar Catálogo →</button>
+    <div class="login-err" id="loginErr">E-mail ou senha incorretos.</div>
+    <div class="login-hint" id="loginHint" style="display:none"><b>Credenciais de acesso</b><br>Use o e-mail e senha cadastrados pelo administrador.</div>
+  </div>
+</div>
+
+<!-- ══ SISTEMA ══ -->
+<div id="pgSistema">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <span class="sb-logo">GMM</span>
+    <span class="sb-role" id="sbRole">Carregando...</span>
+    <nav class="sb-nav" id="sbNav">
+      <!-- preenchido por JS -->
+    </nav>
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar" id="sbAvatar">?</div>
+        <div><div class="sb-uname" id="sbName">...</div><div class="sb-uemail" id="sbEmail">...</div></div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">Sair do sistema</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-area">
+    <div class="topbar">
+      <div class="topbar-title" id="pageTitle">Catálogo <em>de Produtos</em></div>
+      <span class="topbar-date" id="topDate"></span>
+    </div>
+    <div class="content" id="mainContent">
+      <!-- preenchido por JS -->
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL CONFIRMAÇÃO VENDA -->
+<div class="modal-overlay" id="modalVenda">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h3>Confirmar <em>Venda</em></h3>
+    <p id="modalDesc">Você está registrando uma venda. O cliente será direcionado ao link de contratação. Confirme os dados abaixo:</p>
+    <div class="link-confirm" id="modalInfo"></div>
+    <div class="comissao-preview" id="modalComissao"></div>
+    <div class="modal-btns">
+      <button class="mbtn mbtn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="mbtn mbtn-primary" onclick="confirmarVenda()">Confirmar & Abrir Link</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══ DADOS ══
+let USERS = {
+  'iagodanielteixeirafsa@gmail.com': {pass:'M@mmon280799', role:'adm', name:'Iago Daniel'}
+}
+
+// Planos com links mascarados (URL real só é aberta no momento da venda)
+const PLANOS = [
+  {
+    id: 'individual',
+    nome: 'Plano Individual',
+    subtitulo: '& PAP',
+    badge: 'Pessoa Física',
+    icon: '👤',
+    cor: '#c9a84c',
+    preco: 59.90,
+    comissaoVendFixo: 30.00,
+    desc: 'Plano completo para o titular com acesso a todos os benefícios Ampla Mais incluindo o Programa de Apoio Pessoal & Emocional.',
+    beneficios: [
+      'Assistência Médica — consultas a partir de R$ 50',
+      'Assistência Laboratorial — até 80% de desconto',
+      'Assistência Odontológica — até 80% de desconto',
+      'Assistência Funeral — cobertura R$ 6.136,83',
+      'Seguro de Vida — cobertura R$ 12.273,66',
+      'Desconto em Medicamentos — até 70% (Drogasil/Raia)',
+      'Telemedicina ilimitada',
+      'Orientação Médica 24hrs',
+    ],
+    pap: true,
+    linkKey: 'individual', // chave interna — URL real fica oculta
+    comissaoVend: 50,
+    comissaoAdm: 50,
+  },
+  {
+    id: 'familia',
+    nome: 'Plano Família',
+    subtitulo: '& PAP',
+    badge: 'Família',
+    icon: '👨‍👩‍👧',
+    cor: '#e8c97a',
+    preco: 79.90,
+    comissaoVendFixo: 50.00,
+    desc: 'Plano para titular + cônjuge e filhos até 18 anos. Proteção completa para toda a família com PAP incluso.',
+    beneficios: [
+      'Titular + Cônjuge incluídos',
+      'Filhos até 18 anos cobertos',
+      'Assistência Médica — consultas a partir de R$ 50',
+      'Assistência Laboratorial — até 80% de desconto',
+      'Assistência Odontológica — até 80% de desconto',
+      'Assistência Funeral — cobertura R$ 6.136,83',
+      'Seguro de Vida — cobertura R$ 12.273,66',
+      'Telemedicina + Orientação 24hrs',
+    ],
+    pap: true,
+    linkKey: 'familia',
+    comissaoVend: 50,
+    comissaoAdm: 50,
+  },
+  {
+    id: 'familiar',
+    nome: 'Plano Familiar',
+    subtitulo: '& PAP',
+    badge: 'Família Ampliada',
+    icon: '👨‍👩‍👧‍👦',
+    cor: '#3498db',
+    preco: 109.90,
+    comissaoVendFixo: 60.00,
+    desc: 'Plano para famílias maiores incluindo filhos solteiros e irmãos do titular (solteiros). Cobertura ampliada com PAP.',
+    beneficios: [
+      'Titular + Cônjuge incluídos',
+      'Filhos solteiros de qualquer idade',
+      'Irmãos do titular (solteiros)',
+      'Assistência Médica — consultas a partir de R$ 50',
+      'Assistência Laboratorial — até 80% de desconto',
+      'Assistência Odontológica — até 80% de desconto',
+      'Assistência Funeral + Seguro de Vida',
+      'Telemedicina + Orientação 24hrs',
+    ],
+    pap: true,
+    linkKey: 'familiar',
+    comissaoVend: 50,
+    comissaoAdm: 50,
+  },
+  {
+    id: 'senior',
+    nome: 'Plano Sênior',
+    subtitulo: '& PAP',
+    badge: 'Melhor Idade',
+    icon: '🧓',
+    cor: '#2ecc71',
+    preco: 49.90,
+    comissaoVendFixo: 25.00,
+    desc: 'Plano desenvolvido para a melhor idade com benefícios adaptados às necessidades de saúde dos nossos sêniores.',
+    beneficios: [
+      'Focado na melhor idade',
+      'Assistência Médica especializada',
+      'Assistência Laboratorial — até 80% de desconto',
+      'Assistência Odontológica — até 80% de desconto',
+      'Assistência Funeral — cobertura R$ 6.136,83',
+      'Seguro de Vida — cobertura R$ 12.273,66',
+      'Desconto em Medicamentos — até 70%',
+      'Telemedicina + Orientação 24hrs',
+    ],
+    pap: true,
+    linkKey: 'senior',
+    comissaoVend: 50,
+    comissaoAdm: 50,
+  },
+]
+
+// Links reais mascarados — só o sistema acessa, nunca exibido ao vendedor
+const LINKS_REAIS = {
+  'individual': 'https://afiliados.amplamaisbeneficios.com.br/planos/contrate/iago.danielteixeira.barbosa.tavares/c34b275f-0163-47e4-acb4-253e8c8b8f92',
+  'familia':    'https://afiliados.amplamaisbeneficios.com.br/planos/contrate/iago.danielteixeira.barbosa.tavares/64e79e91-d4d7-40da-9257-065ca1af79c2',
+  'familiar':   'https://afiliados.amplamaisbeneficios.com.br/planos/contrate/iago.danielteixeira.barbosa.tavares/64edf016-1b1f-4a0a-9fe1-f746960f7fa1',
+  'senior':     'https://afiliados.amplamaisbeneficios.com.br/planos/contrate/iago.danielteixeira.barbosa.tavares/df9aa020-d570-4749-83c8-8d98178ab24e',
+}
+
+let vendas = []
+let currentUser = null
+let pendingVenda = null
+
+// ══ AUTH ══
+function doLogin() {
+  var email = document.getElementById('loginEmail').value.trim().toLowerCase()
+  var pass  = document.getElementById('loginPass').value.trim()
+  var user  = USERS[email]
+  if (!user || user.pass !== pass) {
+    document.getElementById('loginErr').style.display = 'block'
+    document.getElementById('loginHint').style.display = 'block'
+    return
+  }
+  document.getElementById('loginErr').style.display = 'none'
+  currentUser = {email, role: user.role, name: user.name}
+  document.getElementById('pgLogin').style.display = 'none'
+  document.getElementById('pgSistema').style.display = 'flex'
+  document.getElementById('sbAvatar').textContent = user.name[0]
+  document.getElementById('sbName').textContent = user.name
+  document.getElementById('sbEmail').textContent = email
+  document.getElementById('sbRole').textContent = user.role === 'adm' ? 'Administrador' : 'Vendedor'
+  document.getElementById('topDate').textContent = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})
+  buildNav()
+  showTab('catalogo')
+}
+function doLogout() {
+  currentUser = null
+  document.getElementById('pgSistema').style.display = 'none'
+  document.getElementById('pgLogin').style.display = 'flex'
+  document.getElementById('loginEmail').value = ''
+  document.getElementById('loginPass').value = ''
+}
+
+// ══ NAV ══
+function buildNav() {
+  var isAdm = currentUser.role === 'adm'
+  var nav = document.getElementById('sbNav')
+  nav.innerHTML = ''
+
+  var items = [
+    {id:'catalogo',  icon:'🛍️', label:'Catálogo de Planos'},
+    {id:'registrar', icon:'✍️', label:'Registrar Venda'},
+    {id:'minhasvendas', icon:'💰', label: isAdm ? 'Todas as Vendas' : 'Minhas Vendas'},
+  ]
+  if (isAdm) {
+    items.push({id:'vendedores', icon:'👥', label:'Vendedores'})
+    items.push({id:'comissoes',  icon:'💵', label:'Comissões'})
+  }
+
+  items.forEach(function(it) {
+    var s = document.createElement('p')
+    s.className = 'sb-section'
+    if (it.id === 'catalogo') s.textContent = 'Principal'
+    if (it.id === 'registrar') s.textContent = 'Vendas'
+    if (it.id === 'vendedores') s.textContent = 'Gestão'
+    if (['catalogo','registrar','vendedores'].indexOf(it.id) >= 0) nav.appendChild(s)
+
+    var b = document.createElement('button')
+    b.className = 'sb-item'
+    b.innerHTML = '<span style="font-size:1rem">' + it.icon + '</span> ' + it.label
+    b.onclick = function() { showTab(it.id) }
+    b.dataset.tab = it.id
+    nav.appendChild(b)
+  })
+}
+
+function showTab(id) {
+  document.querySelectorAll('.sb-item').forEach(function(b) {
+    b.classList.toggle('active', b.dataset.tab === id)
+  })
+  var titles = {
+    catalogo: 'Catálogo <em>de Planos</em>',
+    registrar: 'Registrar <em>Venda</em>',
+    minhasvendas: currentUser.role === 'adm' ? 'Todas as <em>Vendas</em>' : 'Minhas <em>Vendas</em>',
+    vendedores: 'Gerenciar <em>Vendedores</em>',
+    comissoes: 'Controle de <em>Comissões</em>',
+  }
+  document.getElementById('pageTitle').innerHTML = titles[id] || id
+  var content = document.getElementById('mainContent')
+  if (id === 'catalogo')     content.innerHTML = renderCatalogo()
+  if (id === 'registrar')    content.innerHTML = renderRegistrar()
+  if (id === 'minhasvendas') content.innerHTML = renderVendas()
+  if (id === 'vendedores')   content.innerHTML = renderVendedores()
+  if (id === 'comissoes')    content.innerHTML = renderComissoes()
+  if (id === 'registrar') setupRegistrar()
+}
+
+// ══ CATÁLOGO ══
+function renderCatalogo() {
+  var html = '<div style="margin-bottom:1.5rem">'
+  html += '<p style="color:var(--muted);font-size:.9rem;line-height:1.8">Selecione um plano para ver os detalhes e iniciar uma venda. Os links de contratação são exclusivos e rastreados — <strong style="color:var(--gold)">nunca compartilhe o link diretamente</strong>, sempre registre a venda pelo sistema.</p>'
+  html += '</div>'
+  html += '<div class="catalogo-grid">'
+  PLANOS.forEach(function(p) {
+    html += '<div class="plano-card">'
+    html += '<div class="plano-top">'
+    html += '<div class="plano-badge">' + p.badge + '</div>'
+    html += '<div class="plano-nome">' + p.icon + ' ' + p.nome + ' <em>' + p.subtitulo + '</em></div>'
+    html += '<div class="plano-desc">' + p.desc + '</div>'
+    html += '<div class="plano-beneficios">'
+    p.beneficios.forEach(function(b) {
+      html += '<div class="plano-ben">' + b + '</div>'
+    })
+    html += '</div>'
+    if (p.pap) {
+      html += '<div class="plano-pap">⭐ <strong>PAP INCLUSO</strong> — Programa de Apoio Pessoal & Emocional: Psicológico · Financeiro · Jurídico · Nutricional · Físico · Pet</div>'
+    }
+    html += '</div>'
+    var fmtPreco = 'R$ ' + p.preco.toFixed(2).replace('.',',')
+    var fmtCom   = 'R$ ' + p.comissaoVendFixo.toFixed(2).replace('.',',')
+    var fmtAdm   = 'R$ ' + (p.preco - p.comissaoVendFixo).toFixed(2).replace('.',',')
+    html += '<div class="plano-bottom">'
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">'
+    html += '<div><div style="font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem">Mensalidade</div>'
+    html += '<div style="font-family:var(--serif);font-size:2rem;font-weight:600;color:var(--white);line-height:1">' + fmtPreco + '<span style="font-size:.85rem;font-weight:300;color:var(--muted)">/mês</span></div></div>'
+    html += '<div style="text-align:right"><div style="font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem">Sua Comissão</div>'
+    html += '<div style="font-family:var(--serif);font-size:1.6rem;font-weight:600;color:var(--green);line-height:1">' + fmtCom + '<span style="font-size:.8rem;font-weight:300;color:var(--muted)">/venda</span></div></div>'
+    html += '</div>'
+    html += '<div class="plano-actions">'
+    html += '<button class="btn-vender" onclick="abrirVenda(\'' + p.id + '\')">Vender Este Plano</button>'
+    html += '<button class="btn-info" onclick="verDetalhes(\'' + p.id + '\')">Detalhes</button>'
+    html += '</div>'
+    html += '</div>'
+    html += '</div>'
+  })
+  html += '</div>'
+  return html
+}
+
+// ══ REGISTRAR VENDA ══
+function renderRegistrar() {
+  var planosOpts = PLANOS.map(function(p) {
+    return '<option value="' + p.id + '">' + p.nome + ' ' + p.subtitulo + '</option>'
+  }).join('')
+
+  return '<div class="reg-form">' +
+    '<h3>Nova <em>Venda</em></h3>' +
+    '<div class="form-row">' +
+      '<div class="field"><label>Nome do Cliente</label><input type="text" id="rCliente" placeholder="Nome completo do cliente"/></div>' +
+      '<div class="field"><label>Telefone</label><input type="tel" id="rTel" placeholder="(00) 00000-0000"/></div>' +
+    '</div>' +
+    '<div class="form-row">' +
+      '<div class="field"><label>E-mail do Cliente</label><input type="email" id="rEmail" placeholder="email@cliente.com"/></div>' +
+      '<div class="field"><label>Plano</label><select id="rPlano" onchange="calcComissao()">' + planosOpts + '</select></div>' +
+    '</div>' +
+    '<div class="form-row">' +
+      '<div class="field"><label>Valor da Venda (R$)</label><input type="number" id="rValor" placeholder="0,00" oninput="calcComissao()" min="0" step="0.01"/></div>' +
+      '<div class="field"><label>Observações</label><input type="text" id="rObs" placeholder="Observações sobre a venda..."/></div>' +
+    '</div>' +
+    '<div class="comissao-preview" id="comissaoPreview">' +
+      '<div class="cp-item"><span class="cp-val" id="cpTotal">R$ 0</span><div class="cp-label">Valor Total</div></div>' +
+      '<div class="cp-item"><span class="cp-val" id="cpVend" style="color:var(--green)">R$ 0</span><div class="cp-label">Sua Comissão</div></div>' +
+      '<div class="cp-item"><span class="cp-val" id="cpAdm" style="color:var(--gold)">R$ 0</span><div class="cp-label">GMM (50%)</div></div>' +
+    '</div>' +
+    '<button class="btn-registrar" onclick="abrirModal()">Registrar Venda & Abrir Link →</button>' +
+  '</div>'
+}
+
+function setupRegistrar() {
+  if (window._pendingPlano) {
+    var sel = document.getElementById('rPlano')
+    if (sel) sel.value = window._pendingPlano
+    window._pendingPlano = null
+  }
+  // Preencher preço automaticamente ao selecionar plano
+  var selPlano = document.getElementById('rPlano')
+  if (selPlano) {
+    selPlano.addEventListener('change', function() {
+      var p = PLANOS.find(function(x){ return x.id === selPlano.value })
+      var valEl = document.getElementById('rValor')
+      if (p && valEl) { valEl.value = p.preco.toFixed(2); calcComissao() }
+    })
+  }
+  // Preencher preço do plano pré-selecionado
+  if (window._pendingPreco) {
+    var valEl = document.getElementById('rValor')
+    if (valEl) valEl.value = window._pendingPreco.toFixed(2)
+    window._pendingPreco = null
+  }
+  calcComissao()
+}
+
+function calcComissao() {
+  var v = parseFloat(document.getElementById('rValor')?.value) || 0
+  var vend = v * 0.5
+  var adm  = v * 0.5
+  var fmt = function(n) { return 'R$ ' + n.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}) }
+  if (document.getElementById('cpTotal')) {
+    document.getElementById('cpTotal').textContent = fmt(v)
+    document.getElementById('cpVend').textContent  = fmt(vend)
+    document.getElementById('cpAdm').textContent   = fmt(adm)
+  }
+}
+
+function abrirVenda(planoId) {
+  window._pendingPlano = planoId
+  var p = PLANOS.find(function(x){ return x.id === planoId })
+  window._pendingPreco = p ? p.preco : null
+  showTab('registrar')
+}
+
+function abrirModal() {
+  var cliente = document.getElementById('rCliente')?.value.trim()
+  var tel     = document.getElementById('rTel')?.value.trim()
+  var valor   = parseFloat(document.getElementById('rValor')?.value) || 0
+  var planoId = document.getElementById('rPlano')?.value
+  if (!cliente || !tel) { showToast('Preencha nome e telefone do cliente.'); return }
+  if (!valor || valor <= 0) { showToast('Informe o valor da venda.'); return }
+
+  var plano = PLANOS.find(function(p) { return p.id === planoId })
+  var fmt = function(n) { return 'R$ ' + n.toLocaleString('pt-BR', {minimumFractionDigits:2}) }
+
+  pendingVenda = {cliente, tel, email: document.getElementById('rEmail')?.value, planoId, valor, obs: document.getElementById('rObs')?.value}
+
+  document.getElementById('modalInfo').innerHTML =
+    '<span>Cliente:</span> ' + cliente + ' · <span>Plano:</span> ' + plano.nome + ' & PAP · <span>Valor:</span> ' + fmt(valor)
+
+  var planoSel = PLANOS.find(function(p) { return p.id === planoId })
+  var comVendSel = planoSel ? planoSel.comissaoVendFixo : valor * 0.5
+  var comAdmSel  = planoSel ? (planoSel.preco - planoSel.comissaoVendFixo) : valor * 0.5
+  document.getElementById('modalComissao').innerHTML =
+    '<div class="cp-item"><span class="cp-val">' + fmt(valor) + '</span><div class="cp-label">Mensalidade</div></div>' +
+    '<div class="cp-item"><span class="cp-val" style="color:var(--green)">' + fmt(comVendSel) + '</span><div class="cp-label">Sua Comissão</div></div>' +
+    '<div class="cp-item"><span class="cp-val" style="color:var(--gold)">' + fmt(comAdmSel) + '</span><div class="cp-label">Receita GMM</div></div>'
+
+  document.getElementById('modalVenda').classList.add('open')
+}
+
+function confirmarVenda() {
+  if (!pendingVenda) return
+  var plano = PLANOS.find(function(p) { return p.id === pendingVenda.planoId })
+  var linkReal = LINKS_REAIS[pendingVenda.planoId]
+  var comVend = plano.comissaoVendFixo
+  var comAdm  = plano.preco - plano.comissaoVendFixo
+
+  // Registra a venda
+  vendas.unshift({
+    id: Date.now(),
+    cliente: pendingVenda.cliente,
+    tel: pendingVenda.tel,
+    email: pendingVenda.email,
+    plano: plano.nome + ' & PAP',
+    planoId: pendingVenda.planoId,
+    valor: pendingVenda.valor,
+    comissaoVend: comVend,
+    comissaoAdm: comAdm,
+    vendedor: currentUser.name,
+    status: 'Aguardando Pagamento',
+    data: new Date().toLocaleDateString('pt-BR'),
+    obs: pendingVenda.obs,
+  })
+
+  // Abre o link real sem expor ao vendedor
+  window.open(linkReal, '_blank')
+
+  closeModal()
+  pendingVenda = null
+  showToast('Venda registrada! Link aberto para o cliente.')
+
+  // Limpa formulário
+  ;['rCliente','rTel','rEmail','rValor','rObs'].forEach(function(id) {
+    var el = document.getElementById(id)
+    if (el) el.value = ''
+  })
+  calcComissao()
+}
+
+function closeModal() {
+  document.getElementById('modalVenda').classList.remove('open')
+}
+
+function verDetalhes(planoId) {
+  var p = PLANOS.find(function(x) { return x.id === planoId })
+  showToast(p.nome + ' — PAP incluso. ' + p.beneficios.length + ' benefícios.')
+}
+
+// ══ VENDAS ══
+function renderVendas() {
+  var lista = currentUser.role === 'adm' ? vendas : vendas.filter(function(v) { return v.vendedor === currentUser.name })
+  var fmt = function(n) { return 'R$ ' + Number(n).toLocaleString('pt-BR', {minimumFractionDigits:2}) }
+
+  // stats
+  var totalVendas = lista.reduce(function(a,v) { return a + v.valor }, 0)
+  var totalComVend = lista.reduce(function(a,v) { return a + v.comissaoVend }, 0)
+  var totalComAdm  = lista.reduce(function(a,v) { return a + v.comissaoAdm }, 0)
+
+  var html = '<div class="stat-row">'
+  html += '<div class="stt-card" style="--accent:var(--gold)"><span class="stt-icon">💰</span><div class="stt-val">' + fmt(totalVendas) + '</div><div class="stt-label">Total em Vendas</div></div>'
+  html += '<div class="stt-card" style="--accent:var(--green)"><span class="stt-icon">✅</span><div class="stt-val">' + lista.length + '</div><div class="stt-label">Vendas Registradas</div></div>'
+  html += '<div class="stt-card" style="--accent:var(--blue)"><span class="stt-icon">💵</span><div class="stt-val">' + fmt(totalComVend) + '</div><div class="stt-label">' + (currentUser.role==='adm'?'Comissões Vendedores':'Minha Comissão') + '</div></div>'
+  if (currentUser.role === 'adm') {
+    html += '<div class="stt-card" style="--accent:var(--gold)"><span class="stt-icon">🏦</span><div class="stt-val">' + fmt(totalComAdm) + '</div><div class="stt-label">Receita GMM</div></div>'
+  } else {
+    html += '<div class="stt-card" style="--accent:var(--gold)"><span class="stt-icon">⏳</span><div class="stt-val">' + lista.filter(function(v){return v.status==='Aguardando Pagamento'}).length + '</div><div class="stt-label">Aguardando Confirmação</div></div>'
+  }
+  html += '</div>'
+
+  html += '<div class="table-wrap"><div class="table-head"><h3>Histórico de Vendas</h3></div>'
+  html += '<table><thead><tr><th>Cliente</th><th>Plano</th>'
+  if (currentUser.role === 'adm') html += '<th>Vendedor</th>'
+  html += '<th>Valor</th><th>Comissão</th><th>Status</th><th>Data</th>'
+  if (currentUser.role === 'adm') html += '<th>Ação</th>'
+  html += '</tr></thead><tbody>'
+
+  if (lista.length === 0) {
+    html += '<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--muted)">Nenhuma venda registrada ainda.</td></tr>'
+  } else {
+    lista.forEach(function(v) {
+      html += '<tr>'
+      html += '<td><strong>' + v.cliente + '</strong><br><span style="font-size:.72rem;color:var(--muted)">' + v.tel + '</span></td>'
+      html += '<td>' + v.plano + '</td>'
+      if (currentUser.role === 'adm') html += '<td>' + v.vendedor + '</td>'
+      html += '<td><strong>' + fmt(v.valor) + '</strong></td>'
+      html += '<td style="color:var(--green)">' + fmt(v.comissaoVend) + '</td>'
+      html += '<td>' + bdg(v.status) + '</td>'
+      html += '<td>' + v.data + '</td>'
+      if (currentUser.role === 'adm') {
+        html += '<td>'
+        if (v.status === 'Aguardando Pagamento') {
+          html += '<button class="act-btn" onclick="confirmarPagamento(' + v.id + ')">Confirmar Pgto</button>'
+        } else {
+          html += '<span style="color:var(--green);font-size:.75rem">✓ Pago</span>'
+        }
+        html += '</td>'
+      }
+      html += '</tr>'
+    })
+  }
+  html += '</tbody></table></div>'
+  return html
+}
+
+function confirmarPagamento(id) {
+  var v = vendas.find(function(x) { return x.id === id })
+  if (v) { v.status = 'Pago'; showToast('Pagamento confirmado! Comissão liberada.'); showTab('minhasvendas') }
+}
+
+// ══ VENDEDORES (ADM) ══
+function renderVendedores() {
+  if (currentUser.role !== 'adm') return '<p style="color:var(--muted)">Acesso restrito.</p>'
+
+  var html = '<div class="sec-header"><h2>Gerenciar <em>Vendedores</em></h2><button class="add-btn" onclick="showAddVendedor()">+ Adicionar Vendedor</button></div>'
+  html += '<div id="addVendForm" style="display:none" class="reg-form"><h3>Novo <em>Vendedor</em></h3>'
+  html += '<div class="form-row">'
+  html += '<div class="field"><label>Nome</label><input type="text" id="vNome" placeholder="Nome completo"/></div>'
+  html += '<div class="field"><label>E-mail</label><input type="email" id="vEmail" placeholder="email@gmm.com"/></div>'
+  html += '</div>'
+  html += '<div class="form-row">'
+  html += '<div class="field"><label>Telefone</label><input type="tel" id="vTel" placeholder="(00) 00000-0000"/></div>'
+  html += '<div class="field"><label>Senha de Acesso</label><input type="password" id="vSenha" placeholder="Senha do vendedor"/></div>'
+  html += '</div>'
+  html += '<button class="btn-registrar" onclick="salvarVendedor()" style="margin-top:.5rem">Cadastrar Vendedor</button>'
+  html += '</div>'
+
+  html += '<div class="table-wrap"><div class="table-head"><h3>Equipe de Vendas</h3></div>'
+  html += '<table><thead><tr><th>Nome</th><th>E-mail</th><th>Telefone</th><th>Vendas</th><th>Comissão Gerada</th><th>Ação</th></tr></thead><tbody>'
+
+  var vendedoresAtivos = Object.keys(USERS).filter(function(e) { return USERS[e].role === 'vendedor' })
+  if (vendedoresAtivos.length === 0) {
+    html += '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--muted)">Nenhum vendedor cadastrado. Adicione o primeiro acima.</td></tr>'
+  } else {
+    vendedoresAtivos.forEach(function(email) {
+      var u = USERS[email]
+      var minhasVendas = vendas.filter(function(v) { return v.vendedor === u.name })
+      var totalCom = minhasVendas.reduce(function(a,v) { return a + v.comissaoVend }, 0)
+      html += '<tr>'
+      html += '<td><strong>' + u.name + '</strong></td>'
+      html += '<td>' + email + '</td>'
+      html += '<td>' + (u.tel||'—') + '</td>'
+      html += '<td>' + minhasVendas.length + '</td>'
+      html += '<td style="color:var(--green)">R$ ' + totalCom.toLocaleString('pt-BR',{minimumFractionDigits:2}) + '</td>'
+      html += '<td><button class="act-btn danger" onclick="removerVendedor(\'' + email + '\')">Remover</button></td>'
+      html += '</tr>'
+    })
+  }
+  html += '</tbody></table></div>'
+  return html
+}
+
+function showAddVendedor() {
+  var f = document.getElementById('addVendForm')
+  if (f) f.style.display = f.style.display === 'none' ? 'block' : 'none'
+}
+
+function salvarVendedor() {
+  var nome  = document.getElementById('vNome')?.value.trim()
+  var email = document.getElementById('vEmail')?.value.trim().toLowerCase()
+  var tel   = document.getElementById('vTel')?.value.trim()
+  var senha = document.getElementById('vSenha')?.value.trim()
+  if (!nome || !email || !senha) { showToast('Preencha nome, e-mail e senha.'); return }
+  if (USERS[email]) { showToast('Este e-mail já está cadastrado.'); return }
+  USERS[email] = {pass: senha, role: 'vendedor', name: nome, tel: tel}
+  showToast('Vendedor ' + nome + ' cadastrado!')
+  showTab('vendedores')
+}
+
+function removerVendedor(email) {
+  if (confirm('Remover o vendedor ' + USERS[email].name + '?')) {
+    delete USERS[email]
+    showToast('Vendedor removido.')
+    showTab('vendedores')
+  }
+}
+
+// ══ COMISSÕES (ADM) ══
+function renderComissoes() {
+  if (currentUser.role !== 'adm') return ''
+  var fmt = function(n) { return 'R$ ' + Number(n).toLocaleString('pt-BR',{minimumFractionDigits:2}) }
+
+  var html = '<div class="sec-header"><h2>Controle de <em>Comissões</em></h2></div>'
+
+  var vendedoresAtivos = Object.keys(USERS).filter(function(e) { return USERS[e].role === 'vendedor' })
+
+  if (vendedoresAtivos.length === 0) {
+    html += '<div class="reg-form"><p style="color:var(--muted);text-align:center">Nenhum vendedor cadastrado ainda.</p></div>'
+    return html
+  }
+
+  vendedoresAtivos.forEach(function(email) {
+    var u = USERS[email]
+    var vv = vendas.filter(function(v) { return v.vendedor === u.name })
+    var pendente = vv.filter(function(v) { return v.status !== 'Pago' }).reduce(function(a,v) { return a+v.comissaoVend },0)
+    var pago     = vv.filter(function(v) { return v.status === 'Pago' }).reduce(function(a,v) { return a+v.comissaoVend },0)
+    var total    = vv.reduce(function(a,v) { return a+v.comissaoVend },0)
+
+    html += '<div class="reg-form" style="margin-bottom:1.2rem">'
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem">'
+    html += '<div><h3 style="font-family:var(--serif);font-size:1.2rem;font-weight:400">' + u.name + '</h3><span style="font-size:.75rem;color:var(--muted)">' + email + ' · ' + vv.length + ' vendas</span></div>'
+    html += '</div>'
+    html += '<div class="comissao-preview">'
+    html += '<div class="cp-item"><span class="cp-val">' + fmt(total) + '</span><div class="cp-label">Total Gerado</div></div>'
+    html += '<div class="cp-item"><span class="cp-val" style="color:var(--gold)">' + fmt(pendente) + '</span><div class="cp-label">A Pagar</div></div>'
+    html += '<div class="cp-item"><span class="cp-val" style="color:var(--green)">' + fmt(pago) + '</span><div class="cp-label">Já Pago</div></div>'
+    html += '</div>'
+
+    if (vv.length > 0) {
+      html += '<table style="margin-top:1rem"><thead><tr><th>Cliente</th><th>Plano</th><th>Valor Venda</th><th>Comissão</th><th>Status</th><th>Data</th><th>Ação</th></tr></thead><tbody>'
+      vv.forEach(function(v) {
+        html += '<tr><td><strong>' + v.cliente + '</strong></td><td>' + v.plano + '</td><td>' + fmt(v.valor) + '</td><td style="color:var(--green)">' + fmt(v.comissaoVend) + '</td><td>' + bdg(v.status) + '</td><td>' + v.data + '</td><td>'
+        if (v.status !== 'Pago') {
+          html += '<button class="act-btn" onclick="confirmarPagamento(' + v.id + ')">Marcar Pago</button>'
+        } else {
+          html += '<span style="color:var(--green);font-size:.75rem">✓ Pago</span>'
+        }
+        html += '</td></tr>'
+      })
+      html += '</tbody></table>'
+    }
+    html += '</div>'
+  })
+  return html
+}
+
+// ══ UTILS ══
+function bdg(s) {
+  var m = {'Aguardando Pagamento':'badge-gold','Pago':'badge-green','Cancelado':'badge-gray'}
+  return '<span class="badge ' + (m[s]||'badge-gray') + '">' + s + '</span>'
+}
+function showToast(msg) {
+  var t = document.getElementById('toast')
+  t.textContent = msg; t.classList.add('show')
+  setTimeout(function() { t.classList.remove('show') }, 3500)
+}
+document.getElementById('modalVenda').addEventListener('click', function(e) {
+  if (e.target === this) closeModal()
+})
+
+// Iniciar com hint visível
+document.getElementById('loginHint').style.display = 'block'
+</script>
+</body>
+</html>
